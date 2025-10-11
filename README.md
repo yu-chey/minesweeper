@@ -1,6 +1,6 @@
 # 💣 Minesweeper
 
-**Author:** [Your Name / Your GitHub Username]
+**Author:** [yu-chey]
 
 ## 🎯 Project Overview
 
