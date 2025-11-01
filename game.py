@@ -1,15 +1,13 @@
 import random
 
 class Cell:
-    def __init__(self, around_mines, mine, fl_open=False) -> None:
+    def __init__(self, around_mines, mine, opened=False) -> None:
         self.around_mines = around_mines
         self.mine = mine
-        self.fl_open = fl_open
+        self.opened = opened
 
 
 class GamePole:
-    __game_over = False
-
     @staticmethod
     def get_around(array, i, j) -> int:
         bounds, count = 0, 0
@@ -30,11 +28,17 @@ class GamePole:
         self.pole = None
         self.raw_list = [[False for _ in range(n)] for _ in range(n)]
         self.n = n
+        self.__cells_to_open = n * n - m
         self.m = m
         self.init()
+        self.__game_over = False
+        self.__cells_to_open = 0
+        self.__opened_count = 0
 
     def init(self) -> None:
         # create the field with mines
+        self.__game_over = False
+        self.__opened_count = 0
         n = self.n
         m = self.m
         mines_placed = 0
@@ -59,7 +63,7 @@ class GamePole:
         for i in range(self.n):
             data_list = list()
             for j in range(self.n):
-                if self.pole[i][j].fl_open:
+                if self.pole[i][j].opened:
                     if self.pole[i][j].mine:
                         data_list.append("X")
                     else:
@@ -68,31 +72,31 @@ class GamePole:
                     data_list.append('#')
             print(" ".join(data_list))
 
+    def open_neighbors(self, row, col):
+        N = self.n
+
+        for r in range(row - 1, row + 2):
+            for c in range(col - 1, col + 2):
+                if 0 <= r < N and 0 <= c < N and (r != row or c != col):
+                    if not self.pole[r][c].opened:
+                        self.open(r, c)
+
     def open(self, row, col):
-        if self.__game_over or self.pole[row][col].fl_open:
+        if self.__game_over or self.pole[row][col].opened:
             return
 
         if self.pole[row][col].mine:
             self.__game_over = True
             print("You lost!")
-            self.pole[row][col].fl_open = True
+            self.pole[row][col].opened = True
             return
 
-        self.pole[row][col].fl_open = True
+        self.pole[row][col].opened = True
+        self.__opened_count += 1
 
-        opened_cells = [self.pole[i][j].fl_open or self.pole[i][j].mine
-                        for i in range(self.n)
-                        for j in range(self.n)]
-
-        if all(opened_cells):
+        if self.__cells_to_open == self.__opened_count:
             self.__game_over = True
             print("You won!")
 
-        if row - 1 > 0 and not self.pole[row - 1][col].mine:
-            self.open(row - 1, col)
-        if row + 1 < self.n and not self.pole[row + 1][col].mine:
-            self.open(row + 1, col)
-        if col - 1 > 0 and not self.pole[row][col - 1].mine:
-            self.open(row, col - 1)
-        if col + 1 < self.n and not self.pole[row][col + 1].mine:
-            self.open(row, col + 1)
+        if self.pole[row][col].around_mines == 0:
+            self.open_neighbors(row, col)
