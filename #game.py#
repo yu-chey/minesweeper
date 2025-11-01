@@ -8,7 +8,7 @@ class Cell:
 
 
 class GamePole:
-    __game_over = False
+    __lose = False
 
     @staticmethod
     def get_around(array, i, j) -> int:
@@ -45,15 +45,8 @@ class GamePole:
                 mines_placed += 1
 
         # create a list with objects
-        self.pole = [[Cell(self.get_around(self.raw_list, i, j), self.raw_list[i][j])
-                    for j in range(n)]
-                    for i in range(n)]
-
-    def get_result_game(self) -> bool:
-        if self.__game_over:
-            return False
-        else:
-            return True
+        self.pole = [[Cell(self.get_around(self.raw_list, i, j), self.raw_list[i][j]) for j in range(n)] for i in
+                     range(n)]
 
     def show(self) -> None:
         for i in range(self.n):
@@ -68,31 +61,20 @@ class GamePole:
                     data_list.append('#')
             print(" ".join(data_list))
 
-    def open(self, row, col):
-        if self.__game_over or self.pole[row][col].fl_open:
+    def open(self, row, col) -> None:
+        if self.__lose or self.pole[row][col].fl_open:
             return
 
         if self.pole[row][col].mine:
-            self.__game_over = True
-            print("You lost!")
+            self.__lose = True
+            print("------------------Вы проиграли!--------------------")
             self.pole[row][col].fl_open = True
+            self.show()
             return
 
-        self.pole[row][col].fl_open = True
+        if not self.__lose:
+            self.pole[row][col].fl_open = True
 
-        opened_cells = [self.pole[i][j].fl_open or self.pole[i][j].mine
-                        for i in range(self.n)
-                        for j in range(self.n)]
 
-        if all(opened_cells):
-            self.__game_over = True
-            print("You won!")
-
-        if row - 1 > 0 and not self.pole[row - 1][col].mine:
-            self.open(row - 1, col)
-        if row + 1 < self.n and not self.pole[row + 1][col].mine:
-            self.open(row + 1, col)
-        if col - 1 > 0 and not self.pole[row][col - 1].mine:
-            self.open(row, col - 1)
-        if col + 1 < self.n and not self.pole[row][col + 1].mine:
-            self.open(row, col + 1)
+pole_game = GamePole(10, 12)
+pole_game.show()
